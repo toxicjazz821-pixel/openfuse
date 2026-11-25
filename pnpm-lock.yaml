@@ -175,8 +175,8 @@ importers:
       typescript:
         specifier: ~5.9.2
         version: 5.9.3
-
-apps/whatsapp-bridge:
+    
+  apps/whatsapp-bridge:
     dependencies:
       '@ag-ui/client':
         specifier: 0.0.59
