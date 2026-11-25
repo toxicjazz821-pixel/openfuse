@@ -70,7 +70,7 @@ export function ImageToolCard({ result, loading }: { result: unknown; loading: b
               ? "Generating the image…"
               : value?.imageId
                 ? "Image ready"
-                : "Waiting for the image…”}
+                : "Waiting for the image…"}
         </Text>
       </View>
       <ErrorNotice error={failure || urlError} />
