@@ -13,8 +13,9 @@ const worker = await createWorkerServer({
   maxSessions: 3,
   idleTimeoutMs: 30 * 60_000,
 });
-worker.server.listen(8790, process.env.WORKER_HOST ?? "127.0.0.1", () => {
-  console.log("OpenFuse browser worker listening on port 8790");
+const workerPort = Number(process.env.PORT ?? "8790");
+worker.server.listen(workerPort, process.env.WORKER_HOST ?? "127.0.0.1", () => {
+  console.log(`OpenFuse browser worker listening on port ${workerPort}`);
 });
 let stopping = false;
 async function stop() {
