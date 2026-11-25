@@ -36,6 +36,7 @@ import {
   threadLocked,
 } from "./conversation-run";
 import { DesktopToolCard } from "./desktop-tool-card";
+import { ImageToolCard } from "./image-tool-card";
 import { confirmedJevSelection, displayJevUserMessage, latestJevPanelId } from "./jev-actions";
 import { JevInteractionContext, JevToolCard } from "./jev-tool-card";
 import { MailToolCard } from "./mail-tool-card";
@@ -88,6 +89,14 @@ export function WorkspaceTools() {
     parameters: displayParameters,
     render: ({ args, result, status }) => (
       <BrowserToolCard url={args.url} result={result} loading={status !== "complete"} />
+    ),
+  });
+  useRenderTool({
+    name: "generateImage",
+    description: "Show the generated image",
+    parameters: displayParameters,
+    render: ({ result, status }) => (
+      <ImageToolCard result={result} loading={status !== "complete"} />
     ),
   });
   useRenderTool({
