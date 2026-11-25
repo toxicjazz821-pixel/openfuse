@@ -24,6 +24,7 @@ import { AgentService } from "./engine/service.ts";
 import { AppError } from "./errors.ts";
 import { Files } from "./files.ts";
 import { GoogleAuth } from "./google-auth.ts";
+import { readGeneratedImage } from "./images.ts";
 import { rateLimit } from "./rate-limit.ts";
 import { WorkspaceService } from "./workspace.ts";
 
@@ -136,7 +137,7 @@ export async function createApp(
     const method = c.req.method === "HEAD" ? "GET" : c.req.method;
     const signedRoute =
       (method === "GET" &&
-        /^\/api\/files\/[^/]+\/content$|^\/api\/browsers\/[^/]+\/(?:preview|console)$/.test(
+        /^\/api\/files\/[^/]+\/content$|^\/api\/browsers\/[^/]+\/(?:preview|console)$|^\/api\/images\/[^/]+$/.test(
           c.req.path,
         )) ||
       (method === "POST" && /^\/api\/browsers\/[^/]+\/console$/.test(c.req.path));
@@ -266,6 +267,20 @@ export async function createApp(
     c.header("Content-Type", "application/pdf");
     c.header("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`);
     return c.body(await files.bytes(c.get("owner"), file.id));
+  });
+  // Generated images: bytes behind auth, plus a short-lived signed URL so the
+  // app can render them in a plain <img> (which cannot send auth headers).
+  app.get("/api/images/:id", async (c) => {
+    const bytes = await readGeneratedImage(config, c.get("owner"), c.req.param("id"));
+    c.header("Content-Type", "image/png");
+    c.header("Cache-Control", "private, max-age=86400");
+    // Hono's body() takes an ArrayBuffer, not a Uint8Array; slice() copies
+    // into a fresh ArrayBuffer so a non-zero byteOffset cannot leak bytes.
+    return c.body(bytes.slice().buffer);
+  });
+  app.get("/api/images/:id/url", async (c) => {
+    await readGeneratedImage(config, c.get("owner"), c.req.param("id"));
+    return c.json({ url: auth.sign(c.get("owner"), `/api/images/${c.req.param("id")}`) });
   });
   app.post("/api/files/:id/fill", async (c) => {
     const body = z
